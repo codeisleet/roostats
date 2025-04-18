@@ -46,7 +46,7 @@ This guide provides some variants, for the roobet devs,
 
 [roo-history.yaml](docs/roo-history.yaml) is an OpenAPI 3.1.0 specification document that provides a comprehensive definition of Roobet's betting history API endpoints(at this point). It includes:
 
-- Detailed endpoint descriptions for `/api/history` and `/api/history/bets`
+- Detailed endpoint descriptions for `/_api/history` and `/_api/history/bets`
 - Request parameters and pagination options
 - Complete schema definitions for API responses
 - Example responses and status codes
