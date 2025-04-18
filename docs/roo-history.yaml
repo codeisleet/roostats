@@ -1,0 +1,348 @@
+openapi: 3.1.0
+info:
+  title: Roobet Betting History API
+  description: API to retrieve user betting history from Roobet
+  version: 1.0.0
+  
+servers:
+  - url: https://roobet.com
+    description: Roobet production server
+
+paths:
+  /_api/history:
+    get:
+      summary: Get transaction history
+      description: Retrieves user transaction history, including bets with basic information
+      parameters:
+        - name: type
+          in: query
+          description: Specifies the transaction type
+          schema:
+            type: string
+            enum: [all, bet, deposit, tip, withdraw, rain, promo, bonus, payout]
+            default: all
+            example: bet
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: order
+          in: query
+          description: Sorting order for results
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: limit
+          in: query
+          description: Number of records per page
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+      responses:
+        '200':
+          description: Successful retrieval of transaction history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionHistoryResponse'
+        '401':
+          description: Unauthorized - Authentication required
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+        '504':
+          description: Gateway Timeout - Request timed out (common with large result sets)
+              
+  /_api/history/bets:
+    get:
+      summary: Get detailed bet history
+      description: Retrieves detailed user bet history with more comprehensive information
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: order
+          in: query
+          description: Sorting order for results
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: limit
+          in: query
+          description: Number of records per page
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+      responses:
+        '200':
+          description: Successful retrieval of detailed bet history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetHistoryResponse'
+        '401':
+          description: Unauthorized - Authentication required
+        '429':
+          description: Too Many Requests - Rate limit exceeded
+        '504':
+          description: Gateway Timeout - Request timed out (common with large result sets)
+
+components:
+  schemas:
+    TransactionHistoryResponse:
+      type: object
+      required:
+        - count
+        - data
+      properties:
+        count:
+          type: integer
+          description: Total number of records matching the query
+          example: 60684
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionRecord'
+    
+    TransactionRecord:
+      type: object
+      required:
+        - _id
+        - currentBalance
+        - userId
+        - amount
+        - type
+        - balanceType
+        - createdAt
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the transaction
+          example: "68019f1c8acb9dec969539e5"
+        currentBalance:
+          type: number
+          format: float
+          description: User balance after transaction
+          example: 10.780949226375
+        userId:
+          type: string
+          description: User identifier
+          example: "95418a75-c3f0-4dcd-856a-b45e076d8615"
+        amount:
+          type: number
+          format: float
+          description: Transaction amount (negative for bets)
+          example: -0.09
+        type:
+          type: string
+          description: Transaction type
+          example: "bet"
+        meta:
+          type: object
+          description: Transaction metadata
+          properties:
+            provider:
+              type: string
+              description: Game provider
+              example: "softswiss"
+            betId:
+              type: string
+              description: Unique bet identifier
+              example: "SWS-fp-2hbrgk1fd-17678954765"
+            gameSessionId:
+              type: string
+              description: Game session identifier
+              example: "fp-2hbrgk1fd-17678954765"
+            gameIdentifiers:
+              type: object
+              properties:
+                identifier:
+                  type: string
+                  description: Game identifier
+                  example: "nolimit:Mental"
+        balanceType:
+          type: string
+          description: Currency/token type
+          example: "eth"
+        createdAt:
+          type: string
+          format: date-time
+          description: Transaction timestamp
+          example: "2025-04-18T00:38:52.227Z"
+        __v:
+          type: integer
+          description: Version number (internal)
+          example: 0
+          
+    BetHistoryResponse:
+      type: object
+      required:
+        - count
+        - data
+      properties:
+        count:
+          type: integer
+          description: Total number of records matching the query
+          example: 60684
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DetailedBetRecord'
+            
+    DetailedBetRecord:
+      type: object
+      required:
+        - _id
+        - betAmount
+        - balanceType
+        - currency
+        - gameName
+        - profit
+        - won
+        - timestamp
+      properties:
+        _id:
+          type: string
+          description: Unique identifier for the bet
+          example: "6801a0ed25c569f81ed3e99a"
+        betAmount:
+          type: number
+          format: float
+          description: Bet amount
+          example: 0.018
+        balanceType:
+          type: string
+          description: Currency/token type
+          example: "eth"
+        currency:
+          type: string
+          description: Base currency
+          example: "usd"
+        displayCurrency:
+          type: string
+          description: Display currency
+          example: "ars"
+        localBetAmount:
+          type: number
+          format: float
+          description: Bet amount in local currency
+          example: 20
+        closedOut:
+          type: boolean
+          description: Whether the bet has been closed
+          example: true
+        closeoutComplete:
+          type: boolean
+          description: Whether closeout process is complete
+          example: true
+        paidOut:
+          type: boolean
+          description: Whether the bet has been paid out
+          example: true
+        betId:
+          type: string
+          description: Unique bet identifier
+          example: "SWS-fp-2hbrgk1fd-17679064453"
+        gameName:
+          type: string
+          description: Internal game name
+          example: "softswiss"
+        gameNameDisplay:
+          type: string
+          description: Display name of the game
+          example: "Mental"
+        incognito:
+          type: boolean
+          description: Whether the bet was placed in incognito mode
+          example: true
+        highroller:
+          type: boolean
+          description: Whether this was a high roller bet
+          example: false
+        thirdParty:
+          type: string
+          description: Third-party game provider
+          example: "softswiss"
+        category:
+          type: string
+          description: Game category
+          example: "slots"
+        gameIdentifier:
+          type: string
+          description: Full game identifier
+          example: "nolimit:Mental"
+        payoutValue:
+          type: number
+          format: float
+          description: Payout value
+          example: 0
+        mult:
+          type: number
+          format: float
+          description: Multiplier
+          example: 0
+        profit:
+          type: number
+          format: float
+          description: Profit from bet (negative for losses)
+          example: -0.018
+        twoFactor:
+          type: boolean
+          description: Whether two-factor authentication was used
+          example: true
+        gameSessionId:
+          type: string
+          description: Game session identifier
+          example: "fp-2hbrgk1fd-17679064453"
+        userId:
+          type: string
+          description: User identifier
+          example: "95418a75-c3f0-4dcd-856a-b45e076d8615"
+        won:
+          type: boolean
+          description: Whether the bet was won
+          example: false
+        timestamp:
+          type: string
+          format: date-time
+          description: Bet timestamp
+          example: "2025-04-18T00:46:37.298Z"
+        closeoutTimestamp:
+          type: string
+          format: date-time
+          description: Closeout timestamp
+          example: "2025-04-18T00:46:37.298Z"
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: "2025-04-18T00:46:37.299Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: "2025-04-18T00:46:37.299Z"
+        __v:
+          type: integer
+          description: Version number (internal)
+          example: 0
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Cookie-based authentication used by Roobet
+
+security:
+  - cookieAuth: []
